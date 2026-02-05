@@ -392,6 +392,8 @@
                     <div class="section-title">Tools Available</div>
                     <div class="section-content">
                         <ul>
+                            <li><strong>dig</strong> - DNS lookup and query tool</li>
+                            <li><strong>nslookup</strong> - DNS query and hostname resolution tool</li>
                             <li><strong>nmap</strong> - Network scanning and service detection</li>
                             <li><strong>redis-cli</strong> - Redis command-line client</li>
                             <li><strong>netcat</strong> - Network connectivity testing</li>
@@ -405,7 +407,8 @@
                     <div class="section-title">Instructions</div>
                     <div class="section-content">
                         <ul>
-                            <li><strong>Nmap:</strong> Use Nmap to scan the IP range 172.20.0.0/16 to discover all active Redis servers. Scan the target IP along with its ports to determine the network status.</li>
+                            <li><strong>dig/nslookup:</strong> Use these DNS lookup tools to find the IP address of the target using DNS enumeration. This helps identify target systems on the network.</li>
+                            <li><strong>Nmap:</strong> Use Nmap for network reconnaissance to discover all active Redis servers. Scan the target IP along with its ports to determine the network status.</li>
                             <li><strong>Port Discovery:</strong> Identify the Redis server port using internet research or your browser to find the default Redis port.</li>
                             <li><strong>Redis-CLI:</strong> Use redis-cli to connect to the Redis command-line interface and access the stored information.</li>
                             <li><strong>Flag Retrieval:</strong> Search for the flag inside the Redis database and submit it to complete the challenge.</li>
