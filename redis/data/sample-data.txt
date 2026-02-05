@@ -1,0 +1,37 @@
+# Sample Data for Redis Lab
+# Format: key=value
+# This file contains additional keys to make enumeration more realistic
+
+# Legacy system data
+legacy:api:endpoint=https://old-api.example.com/v1
+legacy:database:connection=mysql://deprecated
+
+# Monitoring and metrics
+monitor:cpu:threshold=85
+monitor:memory:threshold=90
+monitor:disk:alert=enabled
+
+# Feature flags (common in modern applications)
+feature:darkmode=enabled
+feature:beta_features=disabled
+feature:new_dashboard=testing
+
+# Cache metadata
+cache:ttl:default=3600
+cache:max_size=1073741824
+cache:eviction_policy=lru
+
+# Application metadata
+app:name=ProductionApp
+app:environment=staging
+app:deployed_at=2026-01-15T10:30:00Z
+
+# Dummy user data (for realistic enumeration)
+user:1001:email=alice@example.com
+user:1002:email=bob@example.com
+user:1003:email=charlie@example.com
+
+# System configuration
+system:timezone=UTC
+system:locale=en_US.UTF-8
+system:debug_mode=false

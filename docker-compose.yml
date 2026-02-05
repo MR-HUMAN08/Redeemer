@@ -1,0 +1,100 @@
+version: '3.8'
+
+# Redeemer Lab - Docker Compose Configuration
+# Purpose: Orchestrate OS instance (attacker) and vulnerable Redis service
+# Network: Both containers on same network for realistic enumeration practice
+
+services:
+  # Web Landing Page - The ENTRY POINT
+  # Professional interface for accessing the lab
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: redeemer-web
+    hostname: web
+    networks:
+      - redeemer-net
+    ports:
+      # Landing page
+      - "8080:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # Redis Service - The TARGET
+  # Intentionally vulnerable configuration for enumeration training
+  redis:
+    build:
+      context: ./redis
+      dockerfile: Dockerfile
+    container_name: redeemer-redis
+    hostname: redis
+    networks:
+      - redeemer-net
+    ports:
+      # Expose Redis to host for external testing (optional)
+      - "6379:6379"
+    volumes:
+      # Persist Redis data (optional, for debugging)
+      - redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # OS Instance - The ATTACKER
+  # Debian desktop with security tools (nmap, redis-cli, etc.)
+  os-instance:
+    build:
+      context: ./OS
+      dockerfile: Dockerfile
+    container_name: redeemer-os
+    hostname: attacker
+    networks:
+      - redeemer-net
+    ports:
+      # noVNC web interface (primary access)
+      - "6080:80"
+      # Health check API
+      - "9001:9001"
+      # VNC direct access (optional)
+      - "5900:5900"
+    environment:
+      - VNC_PASSWORD=debian
+      - USERNAME=debian
+    cap_add:
+      # Required for network scanning with nmap
+      - NET_ADMIN
+      - NET_RAW
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9001/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+networks:
+  # Isolated network for the lab
+  # Both containers can communicate, simulating target environment
+  redeemer-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  # Persistent storage for Redis data
+  redis-data:
+    driver: local

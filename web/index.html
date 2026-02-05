@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redeemer Lab - Redis Enumeration Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            overflow-x: hidden;
+        }
+
+        .landing-page {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a0000 0%, #000000 50%, #1a0000 100%);
+            position: relative;
+            padding: 40px 0;
+        }
+
+        .landing-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(255, 0, 0, 0.03) 0px,
+                    transparent 1px,
+                    transparent 2px,
+                    rgba(255, 0, 0, 0.03) 3px
+                );
+            pointer-events: none;
+            animation: scanlines 8s linear infinite;
+        }
+
+        @keyframes scanlines {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(20px); }
+        }
+
+        .container {
+            max-width: 900px;
+            width: 90%;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.5), inset 0 0 20px rgba(255, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+            margin: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ff0000;
+            padding-bottom: 20px;
+        }
+
+        .logo {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ff0000;
+            text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #ff6666;
+            letter-spacing: 2px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            margin: 10px 5px;
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            border-radius: 3px;
+            font-size: 12px;
+            color: #ff6666;
+        }
+
+        .content {
+            margin: 30px 0;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #ff0000;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: '>';
+            margin-right: 10px;
+            color: #ff0000;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0; }
+        }
+
+        .section-content {
+            color: #cccccc;
+            line-height: 1.6;
+            padding-left: 20px;
+        }
+
+        .section-content ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+
+        .section-content li {
+            margin: 8px 0;
+            position: relative;
+        }
+
+        .section-content li::before {
+            content: '▸';
+            position: absolute;
+            left: -15px;
+            color: #ff0000;
+        }
+
+        .objectives {
+            background: rgba(255, 0, 0, 0.05);
+            padding: 15px;
+            border-left: 3px solid #ff0000;
+            margin: 15px 0;
+        }
+
+        .warning {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            color: #ff9999;
+        }
+
+        .warning::before {
+            content: '⚠ WARNING: ';
+            font-weight: bold;
+            color: #ff0000;
+        }
+
+        .start-button {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000000;
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+            border: 3px solid #ff0000;
+            border-radius: 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            font-family: 'Courier New', monospace;
+            margin-top: 30px;
+        }
+
+        .start-button:hover {
+            background: linear-gradient(135deg, #ff3333 0%, #ff0000 100%);
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
+            transform: scale(1.02);
+        }
+
+        .start-button:active {
+            transform: scale(0.98);
+        }
+
+        .os-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #000000;
+            z-index: 1000;
+            flex-direction: column;
+        }
+
+        .os-container.active {
+            display: flex;
+        }
+
+        .os-header {
+            background: #1a0000;
+            border-bottom: 2px solid #ff0000;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .os-title {
+            color: #ff0000;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .os-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 8px 15px;
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff6666;
+            cursor: pointer;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 0, 0, 0.4);
+            color: #ff0000;
+        }
+
+        .close-btn {
+            background: rgba(255, 0, 0, 0.3);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+        }
+
+        .close-btn:hover {
+            background: #ff0000;
+            color: #000000;
+        }
+
+        .os-frame {
+            flex: 1;
+            border: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #00ff00;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .lab-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .info-card {
+            background: rgba(255, 0, 0, 0.05);
+            border: 1px solid #ff0000;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .info-label {
+            color: #ff6666;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .terminal-text {
+            font-family: 'Courier New', monospace;
+            color: #00ff00;
+            background: #000000;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ff0000;
+            margin: 15px 0;
+        }
+
+        .terminal-text .prompt {
+            color: #ff0000;
+        }
+
+        .terminal-text .command {
+            color: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <!-- Landing Page -->
+    <div class="landing-page" id="landingPage">
+        <div class="container">
+            <div class="header">
+                <div class="logo">REDEEMER</div>
+                <div class="subtitle">Redis Enumeration Challenge</div>
+                <div>
+                    <span class="badge">DIFFICULTY: VERY EASY</span>
+                    <span class="badge">TYPE: ENUMERATION</span>
+                    <span class="badge">SERVICE: REDIS</span>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="section">
+                    <div class="section-title">Mission Brief</div>
+                    <div class="section-content">
+                        <p>You've been tasked with enumerating a target network. Intelligence suggests that a Redis database service is exposed somewhere on the network. Your mission: locate the service, enumerate its contents, and retrieve sensitive data.</p>
+                    </div>
+                </div>
+
+                <div class="lab-info">
+                    <div class="info-card">
+                        <div class="info-label">Target Service</div>
+                        <div class="info-value">Redis</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Estimated Time</div>
+                        <div class="info-value">15-30 min</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Skills Required</div>
+                        <div class="info-value">Basic Linux</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Learning Objectives</div>
+                    <div class="objectives">
+                        <div class="section-content">
+                            <ul>
+                                <li>Perform network reconnaissance using Nmap</li>
+                                <li>Identify and enumerate Redis services</li>
+                                <li>Connect to Redis using redis-cli</li>
+                                <li>Execute Redis commands for information gathering</li>
+                                <li>Identify security misconfigurations</li>
+                                <li>Extract sensitive data from databases</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Tools Available</div>
+                    <div class="section-content">
+                        <ul>
+                            <li><strong>nmap</strong> - Network scanning and service detection</li>
+                            <li><strong>redis-cli</strong> - Redis command-line client</li>
+                            <li><strong>netcat</strong> - Network connectivity testing</li>
+                            <li><strong>curl</strong> - HTTP requests and API testing</li>
+                            <li><strong>Full Linux terminal</strong> - Complete command-line environment</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Instructions</div>
+                    <div class="section-content">
+                        <ul>
+                            <li><strong>Nmap:</strong> Use Nmap to scan the IP range 172.20.0.0/16 to discover all active Redis servers. Scan the target IP along with its ports to determine the network status.</li>
+                            <li><strong>Port Discovery:</strong> Identify the Redis server port using internet research or your browser to find the default Redis port.</li>
+                            <li><strong>Redis-CLI:</strong> Use redis-cli to connect to the Redis command-line interface and access the stored information.</li>
+                            <li><strong>Flag Retrieval:</strong> Search for the flag inside the Redis database and submit it to complete the challenge.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">OS Instance</div>
+                    <div class="section-content">
+                        <p>Launch your attack machine to begin the enumeration challenge. The OS instance includes all necessary tools and connects directly to the target network.</p>
+                    </div>
+                    <button class="start-button" onclick="startOS()">
+                        <span class="status-indicator"></span>START OS INSTANCE
+                    </button>
+                </div>
+
+                <div class="warning">
+                    This is an intentionally vulnerable lab environment for educational purposes only. Do not use these techniques on systems you do not own or have explicit permission to test.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OS Container -->
+    <div class="os-container" id="osContainer">
+        <div class="os-header">
+            <div class="os-title">
+                <span class="status-indicator"></span>REDEEMER LAB - OS INSTANCE ACTIVE
+            </div>
+            <div class="os-controls">
+                <button class="control-btn" onclick="fullscreen()">⛶ Fullscreen</button>
+                <button class="control-btn" onclick="window.open('http://localhost:6080', '_blank')">↗ New Window</button>
+                <button class="control-btn close-btn" onclick="closeOS()">✕ Close</button>
+            </div>
+        </div>
+        <iframe id="osFrame" class="os-frame" src="" allowfullscreen></iframe>
+    </div>
+
+    <script>
+        function startOS() {
+            const landingPage = document.getElementById('landingPage');
+            const osContainer = document.getElementById('osContainer');
+            const osFrame = document.getElementById('osFrame');
+            
+            // Set iframe source
+            osFrame.src = 'http://localhost:6080/vnc.html?autoconnect=true&resize=scale';
+            
+            // Hide landing page and show OS container
+            landingPage.style.display = 'none';
+            osContainer.classList.add('active');
+        }
+
+        function closeOS() {
+            const landingPage = document.getElementById('landingPage');
+            const osContainer = document.getElementById('osContainer');
+            const osFrame = document.getElementById('osFrame');
+            
+            // Show landing page and hide OS container
+            osContainer.classList.remove('active');
+            landingPage.style.display = 'flex';
+            
+            // Clear iframe source to stop the session
+            osFrame.src = '';
+        }
+
+        function fullscreen() {
+            const osContainer = document.getElementById('osContainer');
+            if (osContainer.requestFullscreen) {
+                osContainer.requestFullscreen();
+            } else if (osContainer.webkitRequestFullscreen) {
+                osContainer.webkitRequestFullscreen();
+            } else if (osContainer.msRequestFullscreen) {
+                osContainer.msRequestFullscreen();
+            }
+        }
+
+        // Keyboard shortcut: ESC to close OS
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('osContainer').classList.contains('active')) {
+                closeOS();
+            }
+        });
+    </script>
+</body>
+</html>
