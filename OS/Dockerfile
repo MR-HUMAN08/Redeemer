@@ -29,6 +29,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     dnsutils \
     iputils-ping \
     traceroute \
+    dig \
+    nslookup \
     whois \
     net-tools \
     # Text processing (less is separate package)
